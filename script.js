@@ -7,9 +7,8 @@ startButton.addEventListener("click", function () {
     // display quiz
     populate();
 })
-
 //countdown timer
-var count = 30;
+var count = 90;
 var interval = setInterval(function () {
     document.getElementById('count').innerHTML = count;
     count--;
@@ -20,42 +19,37 @@ var interval = setInterval(function () {
         alert("You're out of time!");
     }
 }, 1000);
-
 //quiz function
 function Quiz(questions) {
     this.score = 0;
     this.questions = questions;
     this.questionIndex = 0;
 }
-
 Quiz.prototype.getQuestionIndex = function () {
     return this.questions[this.questionIndex];
 }
-
 Quiz.prototype.guess = function (answer) {
     if (this.getQuestionIndex().isCorrectAnswer(answer)) {
         this.score++;
+        this.questionIndex++;
     }
-
-    this.questionIndex++;
+    else {
+        this.questionIndex++;
+        count -= 10
+        document.getElementById('count').innerHTML = count;
+    }
 }
-
 Quiz.prototype.isEnded = function () {
     return this.questionIndex === this.questions.length;
 }
-
-
 function Question(text, choices, answer) {
     this.text = text;
     this.choices = choices;
     this.answer = answer;
 }
-
 Question.prototype.isCorrectAnswer = function (choice) {
     return this.answer === choice;
 }
-
-
 function populate() {
     if (quiz.isEnded()) {
         showScores();
@@ -72,11 +66,9 @@ function populate() {
             element.innerHTML = choices[i];
             guess("btn" + i, choices[i]);
         }
-
         showProgress();
     }
 };
-
 function guess(id, guess) {
     var button = document.getElementById(id);
     button.onclick = function () {
@@ -84,7 +76,6 @@ function guess(id, guess) {
         populate();
     }
 };
-
 function showProgress() {
     var currentQuestionNumber = quiz.questionIndex + 1;
     var element = document.getElementById("progress");
@@ -93,29 +84,33 @@ function showProgress() {
 var highScores = JSON.parse(localStorage.getItem("highScores")) || []
 
 function showScores() {
-    var gameOverHTML = "<h1>Result</h1>";
-    gameOverHTML += "<h2 id='score'> Your scores: " + quiz.score + "</h2>";
-    var element = document.getElementById("quiz");
-    element.innerHTML = gameOverHTML;
-    var initialsInput = "<input id = 'initials'/>"
-    var button = "<button id = 'submit'> submit</button>"
+    document.querySelector("#quiz").setAttribute("style", "display:none;")
+    document.querySelector(".highScores").setAttribute("style", "display:block")
+    displayScores()
+       console.log("showScores");
+};
+document.querySelector(".highScoreButton").addEventListener("click", saveHighScore)
+
+function saveHighScore(){
+    var initialsInput = document.querySelector(".initialsInput").value 
     var finalScore = {
-        initials: document.getElementById("initials").value,
+        initials:initialsInput, 
         score: quiz.score,
     }
-    //need to put into local storage. 
-    console.log("showScores");
-    // on click of submit button needs an event listener 
-    button.addEventListener("click", function (){
-
+    highScores.push(finalScore)
+    localStorage.setItem("highScores", highScores)
+    // displayscores beneath this broke my code 
+    displayScores()
+}
+function displayScores() {
+    document.querySelector(".scoresList").innerHTML = ""
+    highScores.forEach(function (item) {
+        var liel = document.createElement("li")
+        liel.textContent = `initials: ${item.initials}
+     score: ${item.score}`
+        document.querySelector(".scoresList").append(liel)
     })
-  //grab final score variable and push to local storage array
-        // set local storage with array
-
-
-};
-
-// create questions here
+}
 var questions = [
     new Question("What can JavaScript Change?", ["HTML Content", "HTML Attributes", "HTML Styles (CSS)", "All"], "All"),
     new Question("Which can be used to declare a variable?", ["Let", "Const", "Var", "All"], "All"),
@@ -123,7 +118,6 @@ var questions = [
     new Question("Which is a loop?", ["For", "While", "For In", "All"], "All"),
     new Question("Javascript is used to develope what?", ["Mobile Apps", "Games", "Web Apps", "All"], "All")
 ];
-
 // create quiz
 var quiz = new Quiz(questions);
 
